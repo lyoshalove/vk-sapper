@@ -16,6 +16,22 @@ export const Game: FC = () => {
   const [face, setFace] = useState<TSmileValues>("smile");
   const [timer, setTimer] = useState<ReturnType<typeof setInterval>>();
 
+  const initTimer = () => {
+    setTimer(
+      setInterval(() => {
+        setTime((prev) => ++prev);
+
+        if (sapper.current.isDefeat()) {
+          endGame(false);
+        }
+
+        if (sapper.current.isVictory()) {
+          endGame(true);
+        }
+      }, 1000)
+    );
+  };
+
   const newGame = () => {
     sapper.current = new Sapper(SIZE, minesCount);
     clearInterval(timer);
@@ -28,6 +44,7 @@ export const Game: FC = () => {
   const openCellHandle = (cell: ICoordinates) => {
     if (!sapper.current.isStarted()) {
       sapper.current.startGame(cell);
+      initTimer();
     } else {
       sapper.current.openCell(cell);
     }
@@ -67,24 +84,6 @@ export const Game: FC = () => {
     setPlayable(false);
     clearInterval(timer);
   };
-
-  useEffect(() => {
-    if (sapper.current.isStarted()) {
-      setTimer(
-        setInterval(() => {
-          setTime((prev) => ++prev);
-
-          if (sapper.current.isDefeat()) {
-            endGame(false);
-          }
-
-          if (sapper.current.isVictory()) {
-            endGame(true);
-          }
-        }, 1000)
-      );
-    }
-  }, [sapper.current.isStarted()]);
 
   useEffect(() => {
     if (time >= 999) {
