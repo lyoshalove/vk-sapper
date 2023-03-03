@@ -1,31 +1,31 @@
 import { minesCount, SIZE, smile } from "@/constants";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { Header } from "../Header";
-import Sapper from "../logic/Sapper";
-import { Table } from "../Table";
+import { ICoordinates, TCells, TSmileValues } from "@/types";
+import { FC, useEffect, useRef, useState } from "react";
+import { Header } from "@/components/Header";
+import { Sapper } from "@/features/logic";
+import { Table } from "@/components/Table";
 import "./styles.sass";
 
 export const Game: FC = () => {
   const sapper = useRef(new Sapper(SIZE, minesCount));
   const [time, setTime] = useState<number>(0);
   const [playable, setPlayable] = useState<boolean>(true);
-  const [minesLeft, setMinesLeft] = useState<any>(minesCount);
-  const [cellStatus, setCellStatus] = useState<any>(
+  const [cellStatus, setCellStatus] = useState<TCells>(
     sapper.current.getVisibleCells()
   );
-  const [face, setFace] = useState<string>("smile");
-  const [timer, setTimer] = useState<any>();
+  const [face, setFace] = useState<TSmileValues>("smile");
+  const [timer, setTimer] = useState<ReturnType<typeof setInterval>>();
 
   const newGame = () => {
     sapper.current = new Sapper(SIZE, minesCount);
-    timer && clearInterval(timer);
+    clearInterval(timer);
     setTime(0);
     setFace(smile.SMILE);
     setPlayable(true);
     setCellStatus(sapper.current.getVisibleCells());
   };
 
-  const openCellHandle = (cell: any) => {
+  const openCellHandle = (cell: ICoordinates) => {
     if (!sapper.current.isStarted()) {
       sapper.current.startGame(cell);
     } else {
@@ -34,14 +34,13 @@ export const Game: FC = () => {
     updateCells();
   };
 
-  const openCellsByNumberHandle = (cell: any) => {
+  const openCellsByNumberHandle = (cell: ICoordinates) => {
     sapper.current.openCellsByNumber(cell);
     updateCells();
   };
 
-  const markCellHandle = (cell: any) => {
+  const markCellHandle = (cell: ICoordinates) => {
     sapper.current.markCell(cell);
-    setMinesLeft(sapper.current.getMinesLeft());
     updateCells();
   };
 
@@ -56,9 +55,7 @@ export const Game: FC = () => {
     }
   };
 
-  const setFaceHandle = (face: any) => {
-    setFace(face);
-  };
+  const setFaceHandle = (face: TSmileValues) => setFace(face);
 
   const endGame = (isWin: boolean) => {
     if (isWin) {
@@ -68,9 +65,7 @@ export const Game: FC = () => {
     }
 
     setPlayable(false);
-    setMinesLeft(sapper.current.getMinesLeft());
-    console.log(timer);
-    timer && clearInterval(timer);
+    clearInterval(timer);
   };
 
   useEffect(() => {
@@ -93,12 +88,9 @@ export const Game: FC = () => {
 
   useEffect(() => {
     if (time >= 999) {
-      console.log(timer);
       endGame(false);
     }
   }, [time]);
-
-  useEffect(() => timer && clearInterval(timer), []);
 
   return (
     <div className="game">
@@ -113,8 +105,8 @@ export const Game: FC = () => {
         openCell={openCellHandle}
         markCell={markCellHandle}
         setFace={setFaceHandle}
-        playable={playable}
         openCellsByNumber={openCellsByNumberHandle}
+        playable={playable}
       />
     </div>
   );

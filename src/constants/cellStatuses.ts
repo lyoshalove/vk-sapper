@@ -1,4 +1,6 @@
-export const cellStatuses = {
+import { TCellStatuses } from "@/types";
+
+export const cellStatuses: TCellStatuses = {
   MINE: "mine",
   FLAG: "flag",
   CLOSED: "closed",

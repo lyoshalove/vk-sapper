@@ -1,4 +1,5 @@
 import { cellStatuses } from "@/constants";
+import { TCells } from "@/types";
 
 interface ICoordinates {
   x: number;
@@ -8,8 +9,8 @@ interface ICoordinates {
 class Sapper {
   public size: number;
   public mines: number;
-  public cells: any;
-  public visibleCells: any;
+  public cells: TCells;
+  public visibleCells: TCells;
   public started: boolean;
   public victory: boolean;
   public defeat: boolean;
@@ -21,6 +22,12 @@ class Sapper {
     this.mines = mines;
     this.cells = [];
     this.visibleCells = [];
+    this.started = false;
+    this.victory = false;
+    this.defeat = false;
+    this.openedCells = 0;
+    this.minesLeft = mines;
+
     for (let i = 0; i < size; ++i) {
       this.cells.push([]);
       this.visibleCells.push([]);
@@ -28,27 +35,24 @@ class Sapper {
         this.visibleCells[i].push(cellStatuses.CLOSED);
       }
     }
-    this.started = false;
-    this.victory = false;
-    this.defeat = false;
-
-    this.openedCells = 0;
-    this.minesLeft = mines;
   }
 
   startGame({ x, y }: ICoordinates) {
     this.started = true;
     const emptyCells = new Set(Array(this.size * this.size).keys());
+
     emptyCells.delete(this.getCellHash({ x, y }));
     this.getNeighbours({ x, y }).forEach((neighbour) => {
       emptyCells.delete(this.getCellHash(neighbour));
     });
+
     for (let i = 0; i < this.mines; ++i) {
       const cellHash = this.getRandomCell(emptyCells);
       emptyCells.delete(Number(cellHash));
       const cell = this.getCellFromHash(Number(cellHash));
       this.cells[cell.x][cell.y] = cellStatuses.MINE;
     }
+
     for (let x = 0; x < this.size; ++x) {
       for (let y = 0; y < this.size; ++y) {
         if (this.cells[x][y] !== cellStatuses.MINE) {
@@ -56,6 +60,7 @@ class Sapper {
         }
       }
     }
+
     this.openCell({ x, y });
   }
 
@@ -69,6 +74,7 @@ class Sapper {
     }
 
     this.visibleCells[cell.x][cell.y] = status;
+
     if (status === 0) {
       this.getNeighbours(cell).forEach((neighbour) => {
         if (
@@ -78,6 +84,7 @@ class Sapper {
         }
       });
     }
+
     this.openedCells += 1;
 
     if (this.openedCells + this.mines === this.size * this.size) {
@@ -87,9 +94,11 @@ class Sapper {
 
   openCellsByNumber(cell: ICoordinates) {
     const mines = this.visibleCells[cell.x][cell.y];
+
     if (typeof mines !== "number") {
       return;
     }
+
     if (
       this.getNeighbours(cell).filter(
         ({ x, y }) => this.visibleCells[x][y] === cellStatuses.FLAG
@@ -97,6 +106,7 @@ class Sapper {
     ) {
       return;
     }
+
     this.getNeighbours(cell).forEach(({ x, y }) => {
       if (this.visibleCells[x][y] === cellStatuses.CLOSED) {
         this.openCell({ x, y });
@@ -105,18 +115,20 @@ class Sapper {
   }
 
   markCell(cell: ICoordinates) {
-    switch (this.visibleCells[cell.x][cell.y]) {
-      case cellStatuses.CLOSED:
-        this.visibleCells[cell.x][cell.y] = cellStatuses.FLAG;
-        this.minesLeft--;
-        break;
-      case cellStatuses.FLAG:
-        this.visibleCells[cell.x][cell.y] = cellStatuses.QUESTION;
-        this.minesLeft++;
-        break;
-      case cellStatuses.QUESTION:
-        this.visibleCells[cell.x][cell.y] = cellStatuses.CLOSED;
-        break;
+    if (this.minesLeft > 0) {
+      switch (this.visibleCells[cell.x][cell.y]) {
+        case cellStatuses.CLOSED:
+          this.visibleCells[cell.x][cell.y] = cellStatuses.FLAG;
+          this.minesLeft--;
+          break;
+        case cellStatuses.FLAG:
+          this.visibleCells[cell.x][cell.y] = cellStatuses.QUESTION;
+          this.minesLeft++;
+          break;
+        case cellStatuses.QUESTION:
+          this.visibleCells[cell.x][cell.y] = cellStatuses.CLOSED;
+          break;
+      }
     }
   }
 
@@ -139,6 +151,7 @@ class Sapper {
 
   endGameByLosing() {
     this.defeat = true;
+
     for (let x = 0; x < this.size; ++x) {
       for (let y = 0; y < this.size; ++y) {
         if (
@@ -160,6 +173,7 @@ class Sapper {
   endGameByWinning() {
     this.victory = true;
     this.minesLeft = 0;
+
     for (let x = 0; x < this.size; ++x) {
       for (let y = 0; y < this.size; ++y) {
         if (this.cells[x][y] === cellStatuses.MINE) {
@@ -200,8 +214,9 @@ class Sapper {
     return ans;
   }
 
-  getRandomCell(emptyCells: any) {
+  getRandomCell(emptyCells: Set<number>) {
     let items = Array.from(emptyCells);
+    
     return items[Math.floor(Math.random() * items.length)];
   }
 
@@ -226,4 +241,4 @@ class Sapper {
   }
 }
 
-export default Sapper;
+export { Sapper };

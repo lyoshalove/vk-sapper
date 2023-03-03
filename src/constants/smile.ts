@@ -1,4 +1,6 @@
-export const smile = {
+import { TSmile } from "@/types";
+
+export const smile: TSmile = {
   SMILE: "smile",
   SCARED: "scared",
   COOL: "cool",

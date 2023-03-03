@@ -1,27 +1,28 @@
 import { cellStatuses, smile } from "@/constants";
-import { FC, useState } from "react";
+import { ICoordinates, TSmileValues } from "@/types";
+import { FC, useState, MouseEvent } from "react";
 import "./styles.sass";
 
 interface IProps {
   x: number;
   y: number;
   cellStatus: number | string;
-  openCell: any;
-  markCell: any;
-  setFace: any;
-  playable: any;
-  openCellsByNumber: any;
+  playable: boolean;
+  openCell: (coordinates: ICoordinates) => void;
+  markCell: (coordinates: ICoordinates) => void;
+  setFace: (newFace: TSmileValues) => void;
+  openCellsByNumber: (coordinates: ICoordinates) => void;
 }
 
 export const Cell: FC<IProps> = ({
   x,
   y,
   cellStatus,
+  playable,
   openCellsByNumber,
   openCell,
   markCell,
   setFace,
-  playable,
 }) => {
   const [isActive, setIsActive] = useState<boolean>(false);
   const [isPressed, setIsPressed] = useState<boolean>(false);
@@ -37,12 +38,12 @@ export const Cell: FC<IProps> = ({
     openCell({ x, y });
   };
 
-  const contextMenuHandle = (e: any) => {
+  const contextMenuHandle = (e: MouseEvent) => {
     e.preventDefault();
     markCell({ x, y });
   };
 
-  const pointerDownHandle = (e: any) => {
+  const pointerDownHandle = (e: MouseEvent) => {
     e.preventDefault();
 
     if (cellStatus !== cellStatuses.CLOSED) {
@@ -92,7 +93,7 @@ export const Cell: FC<IProps> = ({
     }
 
     if (isPressed) {
-      className += " empty";
+      className += " pressed";
     }
 
     return className;
@@ -113,9 +114,7 @@ export const Cell: FC<IProps> = ({
     return (
       <div
         className={getClassName()}
-        onContextMenu={(e) => {
-          e.preventDefault();
-        }}
+        onContextMenu={(e) => e.preventDefault()}
       ></div>
     );
   }

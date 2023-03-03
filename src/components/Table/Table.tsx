@@ -1,15 +1,16 @@
 import { SIZE } from "@/constants";
-import { FC, useEffect, useState } from "react";
-import { Cell } from "../Cell";
+import { ICoordinates, TCells, TSmileValues } from "@/types";
+import { FC, ReactElement, useEffect, useState } from "react";
+import { Cell } from "@/components/Cell";
 import "./styles.sass";
 
 interface IProps {
-  cellsStatus: any;
-  openCell: any;
-  markCell: any;
-  setFace: any;
-  playable: any;
-  openCellsByNumber: any;
+  cellsStatus: TCells;
+  openCell: (coordinates: ICoordinates) => void;
+  markCell: (coordinates: ICoordinates) => void;
+  setFace: (newFace: TSmileValues) => void;
+  playable: boolean;
+  openCellsByNumber: (coordinates: ICoordinates) => void;
 }
 
 export const Table: FC<IProps> = ({
@@ -20,7 +21,7 @@ export const Table: FC<IProps> = ({
   playable,
   openCellsByNumber,
 }) => {
-  const [cells, setCells] = useState<any[]>([]);
+  const [cells, setCells] = useState<ReactElement[]>([]);
 
   useEffect(() => {
     setCells([]);
@@ -43,7 +44,7 @@ export const Table: FC<IProps> = ({
         ]);
       }
     }
-  }, [openCell]);
+  }, [cellsStatus]);
 
   return <div className="table">{cells}</div>;
 };

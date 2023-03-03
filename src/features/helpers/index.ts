@@ -1,1 +1,2 @@
-export * from "./getRandomNumber";
+export * from "./changeToGetValuesType";
+export * from "./getNumberByDigits";
